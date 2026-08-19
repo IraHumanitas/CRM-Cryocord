@@ -1,0 +1,163 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-07-20 21:24:24.655971",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "service_item",
+  "qty",
+  "column_break_wojk",
+  "billing_type",
+  "storage_duration_years",
+  "section_break_baji",
+  "description",
+  "section_break_xyjc",
+  "rate",
+  "amount",
+  "column_break_xudz",
+  "discount_percentage",
+  "discount_amount",
+  "section_break_cdir",
+  "net_amount",
+  "notes_section",
+  "notes"
+ ],
+ "fields": [
+  {
+   "columns": 3,
+   "fieldname": "service_item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Service Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "qty",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Qty",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_wojk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 2,
+   "default": "One-Time",
+   "fetch_from": "service_item.cc_default_billing_type",
+   "fetch_if_empty": 1,
+   "fieldname": "billing_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Billing Type",
+   "options": "One-Time\nAnnual/Recurring"
+  },
+  {
+   "columns": 1,
+   "fetch_from": "service_item.cc_default_storage_years",
+   "fetch_if_empty": 1,
+   "fieldname": "storage_duration_years",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Storage Duration (Years)",
+   "mandatory_depends_on": "eval:doc.billing_type && doc.billing_type==\"Annual/Recurring\"",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "section_break_baji",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "service_item.description",
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_xyjc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "columns": 2,
+   "fetch_from": "service_item.standard_rate",
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Rate",
+   "non_negative": 1,
+   "options": "currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount",
+   "non_negative": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_xudz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "discount_percentage",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Discount %"
+  },
+  {
+   "fieldname": "discount_amount",
+   "fieldtype": "Currency",
+   "label": "\tDiscount Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_cdir",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "net_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Net Amount",
+   "non_negative": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-07-22 21:57:40.852720",
+ "modified_by": "Administrator",
+ "module": "CRM CryoCord",
+ "name": "CryoCord Requested Package",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
