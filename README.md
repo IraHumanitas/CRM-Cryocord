@@ -1,4 +1,4 @@
-# CryoCord CMS — Onboarding Approval Workflow (`cryocord_cms`)
+# CryoCord CRM — Onboarding Approval Workflow (`cryocord_CRM`)
 
 A custom Frappe app that manages CryoCord's client onboarding lifecycle inside ERPNext — from CRM handover to "ready for storage agreement" — with a real approval step, separation of duties, server-side transition guards, and an append-only audit trail of every decision.
 
@@ -37,8 +37,8 @@ A custom Frappe app that manages CryoCord's client onboarding lifecycle inside E
 
 ```bash
 cd frappe-bench
-bench get-app https://github.com/IraHumanitas/CryoCord-CMS.git
-bench --site <your-site> install-app cryocord_cms
+bench get-app https://github.com/IraHumanitas/CryoCord-CRM.git
+bench --site <your-site> install-app cryocord_CRM
 bench --site <your-site> migrate
 bench --site <your-site> clear-cache
 ```
@@ -60,9 +60,9 @@ Create three users (Users → New User, user type **System User**) and assign on
 
 | User (example) | Role |
 |---|---|
-| `sales.user@cms.com` | CryoCord Sales Officer |
-| `operation@cms.com` | CryoCord Operations Manager |
-| `sales.manager@cms.com` | CryoCord Sales Manager |
+| `sales.user@CRM.com` | CryoCord Sales Officer |
+| `operation@CRM.com` | CryoCord Operations Manager |
+| `sales.manager@CRM.com` | CryoCord Sales Manager |
 
 > ⚠️ **Do not test as Administrator** — it bypasses every permission check, so everything will look like it "works" even when Doc Permission are wrong.
 
@@ -80,7 +80,7 @@ Create three users (Users → New User, user type **System User**) and assign on
 
 ## 2. What This App Contains
 
-The CryoCord CMS app extends ERPNext/Frappe with a focused onboarding workflow while reusing standard ERPNext DocTypes wherever the existing data model is sufficient.
+The CryoCord CRM app extends ERPNext/Frappe with a focused onboarding workflow while reusing standard ERPNext DocTypes wherever the existing data model is sufficient.
 
 ### Custom Components
 
@@ -125,6 +125,42 @@ The app ships configuration required to reproduce the CryoCord setup across envi
 | **Notifications**          | Status-change notifications related to the CryoCord onboarding process                                                     |
 
 The app keeps business-specific behavior inside the custom application while minimizing modifications to ERPNext core code, making the implementation safer to maintain across framework and ERPNext upgrades.
+
+### Custom Fields Added to Standard DocTypes
+
+The app extends standard ERPNext/Frappe DocTypes with CryoCord-specific fields where the existing schema does not cover the onboarding and service catalog requirements.
+
+#### Lead
+
+The following custom fields are added to **Lead**:
+
+| Field                       | Type   | Purpose                                                                                                                             |
+| --------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `cc_service_interest`       | Select | Captures the service category the lead is interested in, such as Stem Cell Banking, Cell Therapy, Biobanking, or Affiliate Product. |
+| `cc_expected_delivery_date` | Date   | Records the expected delivery date for services where delivery-related information is relevant.                                     |
+| `cc_preferred_hospital`     | Data   | Records the hospital preferred by the customer for applicable services.                                                             |
+| `cc_lost_reason`            | Select | Records the reason a lead is marked as Lost Quotation, such as price, competitor, no response, medical reason, or duplicate lead.   |
+
+The delivery date and preferred hospital fields are conditionally displayed based on the selected service interest. The lost reason is displayed when the Lead status is `Lost Quotation` or `Do Not Contact`.
+
+#### Item
+
+The following custom fields are added to **Item** to support CryoCord's service and storage catalog:
+
+| Field                              | Type   | Purpose                                                                                                                                    |
+| ---------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `cc_service_category`              | Select | Classifies the item into a CryoCord service category, such as Stem Cell Banking, Genetic Testing, Health Screening, or Storage Extension.  |
+| `cc_cell_category`                 | Select | Identifies the cell category for applicable banking services, such as Hematopoietic Stem Cell, MSC, iPSC, or Immune Cell.                  |
+| `cc_source_tissue`                 | Select | Identifies the biological source or tissue associated with the service, such as Cord Blood, Cord Tissue, Peripheral Blood, or Bone Marrow. |
+| `cc_storage_segment`               | Select | Identifies the applicable storage segment: Baby, Adult, Research, or N/A.                                                                  |
+| `cc_default_billing_type`          | Select | Defines the default billing model for the item: One-Time or Annual/Recurring.                                                              |
+| `cc_default_storage_years`         | Int    | Stores the default storage duration in years for applicable services.                                                                      |
+| `cc_is_storage_service`            | Check  | Indicates whether the item represents a storage service.                                                                                   |
+| `cc_require_sample_collection`     | Check  | Indicates whether the service requires sample collection.                                                                                  |
+| `cc_require_laboratory_processing` | Check  | Indicates whether the service requires laboratory processing.                                                                              |
+| `cc_collection_kit_required`       | Check  | Indicates whether a collection kit is required when sample collection is enabled.                                                          |
+
+Some Item fields are conditionally displayed based on the selected service category or related configuration. For example, cell category is shown for applicable banking services, while collection kit requirement depends on whether sample collection is required.
 
 
 ## 3. Data Model & Design Rationale
