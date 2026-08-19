@@ -1,0 +1,393 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-07-21 09:52:00.377402",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "case_detail_section",
+  "customer",
+  "customer_name",
+  "customer_type",
+  "lead",
+  "column_break_arxs",
+  "contact_person",
+  "primary_address",
+  "service_category",
+  "sales_officer",
+  "delivery_information_section",
+  "expected_delivery_date",
+  "preferred_hospital",
+  "requested_packages_section",
+  "requested_packages",
+  "totals_section",
+  "currency",
+  "total_amount",
+  "total_discount",
+  "grand_total_excl_tax",
+  "discount_reason",
+  "payment_section",
+  "payment_terms",
+  "initial_payment_confirmed",
+  "approval_section",
+  "submitted_by",
+  "submitted_on",
+  "column_break_jqwv",
+  "decision_by",
+  "decision_on",
+  "rejection_reason",
+  "handover_section",
+  "quotation_ref",
+  "contract_ref",
+  "remarks",
+  "column_break_jcji",
+  "onboarded_on",
+  "next_renewal_date",
+  "section_break_gtfm",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_gtfm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "CryoCord Onboarding Case",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "default": "SAR-.YYYY.-.####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "SAR-.YYYY.-.####",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "case_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Case Detail"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Customer Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "customer.customer_type",
+   "fieldname": "customer_type",
+   "fieldtype": "Data",
+   "label": "Customer Type",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "customer.lead_name",
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "label": "Lead",
+   "options": "Lead",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_arxs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "contact_person",
+   "fieldtype": "Link",
+   "label": "Contact Person",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "primary_address",
+   "fieldtype": "Link",
+   "label": "Primary Address",
+   "options": "Address"
+  },
+  {
+   "fieldname": "service_category",
+   "fieldtype": "Link",
+   "label": "Service Category",
+   "options": "Item Group",
+   "reqd": 1
+  },
+  {
+   "default": "__user",
+   "fieldname": "sales_officer",
+   "fieldtype": "Link",
+   "label": "Sales Officer",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:[\n    \"Cord Blood Banking\",\n    \"Cord Tissue Banking\",\n    \"Stem Cell Banking\",\n    \"Biobanking\"\n].includes(doc.service_category)",
+   "fieldname": "delivery_information_section",
+   "fieldtype": "Section Break",
+   "label": "Delivery Information"
+  },
+  {
+   "fieldname": "expected_delivery_date",
+   "fieldtype": "Date",
+   "label": "Expected Delivery Date",
+   "mandatory_depends_on": "eval:[\n\"Cord Blood Banking\",\n\"Cord Tissue Banking\",\n\"Stem Cell Banking\",\n\"Biobanking\"\n].includes(doc.service_category)"
+  },
+  {
+   "fieldname": "preferred_hospital",
+   "fieldtype": "Data",
+   "label": "Preferred Hospital"
+  },
+  {
+   "fieldname": "requested_packages_section",
+   "fieldtype": "Section Break",
+   "label": "Requested Packages"
+  },
+  {
+   "fieldname": "requested_packages",
+   "fieldtype": "Table",
+   "label": "Requested Packages",
+   "options": "CryoCord Requested Package",
+   "reqd": 1
+  },
+  {
+   "fieldname": "totals_section",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "non_negative": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_discount",
+   "fieldtype": "Currency",
+   "label": "Total Discount",
+   "non_negative": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "description": "Commercial value excluding statutory tax.\nTaxes are applied during invoicing.",
+   "fieldname": "grand_total_excl_tax",
+   "fieldtype": "Currency",
+   "label": "Grand Total (Excl. Tax)",
+   "non_negative": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "discount_reason",
+   "fieldtype": "Small Text",
+   "label": "Discount Reason",
+   "mandatory_depends_on": "eval:doc.total_discount > 0"
+  },
+  {
+   "fieldname": "payment_section",
+   "fieldtype": "Section Break",
+   "label": "Payment"
+  },
+  {
+   "default": "Full Payment",
+   "fieldname": "payment_terms",
+   "fieldtype": "Select",
+   "label": "Payment Terms",
+   "options": "Full Payment\nInstallment",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "initial_payment_confirmed",
+   "fieldtype": "Check",
+   "label": "Initial Payment Confirmed"
+  },
+  {
+   "fieldname": "approval_section",
+   "fieldtype": "Section Break",
+   "label": "Approval"
+  },
+  {
+   "fieldname": "submitted_by",
+   "fieldtype": "Link",
+   "label": "Submitted By",
+   "options": "User",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "submitted_on",
+   "fieldtype": "Datetime",
+   "label": "Submitted On",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_jqwv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "decision_by",
+   "fieldtype": "Link",
+   "label": "Decision By",
+   "options": "User",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "decision_on",
+   "fieldtype": "Datetime",
+   "label": "Decision On",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "rejection_reason",
+   "fieldtype": "Text",
+   "label": "Rejection Reason",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "onboarded_on",
+   "fieldtype": "Datetime",
+   "label": "Onboarded On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "handover_section",
+   "fieldtype": "Section Break",
+   "label": "Handover"
+  },
+  {
+   "fieldname": "quotation_ref",
+   "fieldtype": "Link",
+   "label": "Quotation Ref",
+   "options": "Quotation"
+  },
+  {
+   "fieldname": "contract_ref",
+   "fieldtype": "Link",
+   "label": "Contract Ref",
+   "options": "Contract"
+  },
+  {
+   "fieldname": "column_break_jcji",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "next_renewal_date",
+   "fieldtype": "Datetime",
+   "label": "Next Renewal Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Text",
+   "label": "Remarks"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [
+  {
+   "group": "Audit Trail",
+   "link_doctype": "CryoCord Approval Audit Log",
+   "link_fieldname": "onboarding_case"
+  }
+ ],
+ "modified": "2026-08-05 16:12:38.433591",
+ "modified_by": "Administrator",
+ "module": "CRM CryoCord",
+ "name": "CryoCord Onboarding Case",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Operations Manager",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "if_owner": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "track_seen": 1
+}
