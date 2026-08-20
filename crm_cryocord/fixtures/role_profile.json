@@ -1,0 +1,59 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2026-07-24 09:50:22.506881",
+  "name": "Sales User",
+  "role_profile": "Sales User",
+  "roles": [
+   {
+    "parent": "Sales User",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Employee"
+   },
+   {
+    "parent": "Sales User",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Sales User"
+   }
+  ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2026-07-24 09:51:32.778114",
+  "name": "Sales Manager",
+  "role_profile": "Sales Manager",
+  "roles": [
+   {
+    "parent": "Sales Manager",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Sales Manager",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Employee"
+   }
+  ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2026-07-27 16:30:09.758588",
+  "name": "Operations Manager",
+  "role_profile": "Operations Manager",
+  "roles": [
+   {
+    "parent": "Operations Manager",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Operations Manager"
+   }
+  ]
+ }
+]

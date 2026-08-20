@@ -304,6 +304,28 @@ fixtures = [
             ["doc_type", "=", "Item"]
         ]
     },
+
+    # ROle
+     {
+        "dt": "Role",
+        "filters": [
+            ["name", "in", [
+                "Operations Manager",
+                "Sales Manager",
+                "Sales User",
+            ]]
+        ],
+    },
+    {
+        "dt": "Role Profile",
+        "filters": [
+            ["name", "in", [
+                "Operations Manager",
+                "Sales Manager",
+                "Sales User",
+            ]]
+        ],
+    },
 ]
 
 
