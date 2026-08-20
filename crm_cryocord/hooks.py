@@ -342,6 +342,17 @@ fixtures = [
             ["name", "=", "CryoCord CRM"]
         ]
     },
+    {
+        "dt": "Number Card",
+        "filters": [
+            ["name", "in", [
+                "Active Customers",
+                "Lead Interest",
+                "All Active Onboarding Case",
+                "Storage Agreement Onboarding Case",
+            ]]
+        ],
+    },
 ]
 
 
