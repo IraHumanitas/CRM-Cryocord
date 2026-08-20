@@ -734,8 +734,39 @@ These tests verify both the functional response and the server-side authorizatio
 
 ## 9. Upgrade Safety
 
-<!-- TODO: custom app only, cc_-prefixed Custom Fields + Property Setters via
-     fixtures, no core edits, hooks are additive, patches for data migrations. -->
+The CryoCord customization is implemented entirely inside the custom application and avoids modifications to Frappe or ERPNext core code.
+
+### Customization Strategy
+
+* All CryoCord-specific business logic is implemented in the custom `crm_cryocord` app.
+* Standard ERPNext DocTypes such as `Customer`, `Lead`, `Item`, `Contact`, and `Address` are reused rather than modified at the core level.
+* Custom fields use the `cc_` prefix to clearly separate CryoCord-specific fields from standard ERPNext fields.
+* Property Setters are used for UI and metadata customizations instead of editing standard DocType definitions directly.
+
+### Fixtures
+
+Custom fields, Property Setters, workflow configuration, roles, permissions, and other required configuration are maintained through the application's fixtures where applicable.
+
+This allows the customization to be reproduced consistently across environments after installation or migration.
+
+### Hooks and Server-Side Logic
+
+The application's DocType controllers, permission hooks, workflow guards, reports, and API endpoints are implemented as additive customizations.
+
+No Frappe or ERPNext core Python, JavaScript, or configuration files are modified.
+
+### Data Migrations
+
+When a future schema or data change requires migration, the application can use Frappe patches to transform existing data in a controlled and versioned manner.
+
+This keeps migration logic within the custom application and avoids manual changes to ERPNext core data structures.
+
+### Upgrade Approach
+
+Because the customization is isolated from the framework and ERPNext core, upgrades can be performed while minimizing merge conflicts and reducing the risk of losing custom business logic.
+
+After an ERPNext/Frappe upgrade, the custom application's fixtures, patches, workflow configuration, permissions, reports, APIs, and server-side validations should be verified against the upgraded version.
+
 
 ## 10. Production-Readiness Note
 
