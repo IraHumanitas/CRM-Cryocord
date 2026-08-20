@@ -353,6 +353,14 @@ fixtures = [
             ]]
         ],
     },
+
+    # Notif basic
+    {
+        "dt": "Notification",
+        "filters": [
+            ["name", "like", "CryoCord%"]
+        ]
+    },
 ]
 
 
