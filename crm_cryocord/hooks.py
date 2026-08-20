@@ -326,6 +326,20 @@ fixtures = [
             ]]
         ],
     },
+    {
+        "dt": "Custom DocPerm",
+        "filters": [
+            ["parent", "in", [
+                "CryoCord Onboarding Case",
+                "Lead",
+                "Customer",
+                "Contact",
+                "Address",
+                "Item",
+                "Contract",
+            ]]
+        ],
+    },
 
     # Workflow
     {

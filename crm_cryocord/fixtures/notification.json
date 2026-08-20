@@ -19,6 +19,9 @@
   "modified": "2026-08-20 14:39:40.517066",
   "module": null,
   "name": "CryoCord - New Lead",
+  "notification_message": null,
+  "notification_title": null,
+  "notification_type": null,
   "print_format": null,
   "property_value": null,
   "recipients": [
@@ -62,6 +65,9 @@
   "modified": "2026-08-20 14:39:40.534333",
   "module": null,
   "name": "CryoCord - New Customer",
+  "notification_message": null,
+  "notification_title": null,
+  "notification_type": null,
   "print_format": null,
   "property_value": null,
   "recipients": [
@@ -105,6 +111,9 @@
   "modified": "2026-08-20 14:39:40.549859",
   "module": null,
   "name": "CryoCord - Onboarding Pending Operations Approval",
+  "notification_message": null,
+  "notification_title": null,
+  "notification_type": null,
   "print_format": null,
   "property_value": null,
   "recipients": [
@@ -148,6 +157,9 @@
   "modified": "2026-08-20 14:39:40.553399",
   "module": null,
   "name": "CryoCord - Onboarding Rejected",
+  "notification_message": null,
+  "notification_title": null,
+  "notification_type": null,
   "print_format": null,
   "property_value": null,
   "recipients": [
@@ -191,6 +203,9 @@
   "modified": "2026-08-20 14:39:40.556329",
   "module": null,
   "name": "CryoCord - Onboarding Approved",
+  "notification_message": null,
+  "notification_title": null,
+  "notification_type": null,
   "print_format": null,
   "property_value": null,
   "recipients": [
@@ -234,6 +249,9 @@
   "modified": "2026-08-20 14:39:40.559221",
   "module": null,
   "name": "CryoCord - Ready for Storage Agreement",
+  "notification_message": null,
+  "notification_title": null,
+  "notification_type": null,
   "print_format": null,
   "property_value": null,
   "recipients": [
@@ -277,6 +295,9 @@
   "modified": "2026-08-20 14:39:40.562149",
   "module": null,
   "name": "CryoCord - Onboarding Completed",
+  "notification_message": null,
+  "notification_title": null,
+  "notification_type": null,
   "print_format": null,
   "property_value": null,
   "recipients": [
