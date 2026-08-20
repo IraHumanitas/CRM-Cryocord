@@ -1,12 +1,17 @@
 frappe.ui.form.on("CryoCord Onboarding Case", {
     setup(frm) {
         frm.set_query("service_item", "requested_packages", () => {
+            const filters = {
+                cc_is_storage_service: 1,
+                disabled: 0
+            };
+
+            if (frm.doc.service_category && frm.doc.service_category !== "All Item Groups") {
+                filters.item_group = frm.doc.service_category;
+            }
+
             return {
-                filters: {
-                    item_group: frm.doc.service_category,
-                    cc_is_storage_service: 1,
-                    disabled: 0
-                }
+                filters
             };
         });
     },
