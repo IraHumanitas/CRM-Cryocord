@@ -261,3 +261,54 @@ class CryoCordOnboardingCase(Document):
         if self.onboarded_on and self.service_category in c.DELIVERY_REQUIRED_CATEGORIES:
             # default storage term — ideally sourced from the Item/package master instead
             self.next_renewal_date = add_years(getdate(self.onboarded_on), c.DEFAULT_STORAGE_TERM_YEARS)
+
+
+
+# ============================================================================
+# ROW-LEVEL PERMISSIONS
+# ============================================================================
+# Rules (per the assignment model):
+#   - Sales User      : only cases where sales_officer == themselves
+#   - Sales Manager    : all cases (no restriction)
+#   - Operations Manager: all cases EXCEPT Draft / Sales Review — they only
+#                          need visibility once a case reaches their stage
+#   - System Manager   : all cases (no restriction)
+#
+# This only scopes CryoCord Onboarding Case records. Baseline read/write/
+# create permissions per role must still exist in the DocType's Role
+# Permission list — these hooks narrow that access further, they don't
+# grant it.
+
+def get_permission_query_conditions(user=None):
+    user = user or frappe.session.user
+    roles = set(frappe.get_roles(user))
+
+    if roles & {c.ROLE_SYSTEM_MANAGER, c.ROLE_SALES_MANAGER}:
+        return ""
+
+    if c.ROLE_OPERATIONS_MANAGER in roles:
+        excluded = ", ".join(
+            frappe.db.escape(s) for s in (c.STATE_DRAFT, c.STATE_SALES_REVIEW)
+        )
+        return f"(`tabCryoCord Onboarding Case`.workflow_state not in ({excluded}))"
+
+    if c.ROLE_SALES_USER in roles:
+        return f"(`tabCryoCord Onboarding Case`.sales_officer = {frappe.db.escape(user)})"
+
+    return "1=0"
+
+
+def has_permission(doc, ptype="read", user=None):
+    user = user or frappe.session.user
+    roles = set(frappe.get_roles(user))
+
+    if roles & {c.ROLE_SYSTEM_MANAGER, c.ROLE_SALES_MANAGER}:
+        return True
+
+    if c.ROLE_OPERATIONS_MANAGER in roles:
+        return doc.workflow_state not in (c.STATE_DRAFT, c.STATE_SALES_REVIEW)
+
+    if c.ROLE_SALES_USER in roles:
+        return doc.sales_officer == user
+
+    return False

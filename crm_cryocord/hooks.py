@@ -305,3 +305,14 @@ fixtures = [
         ]
     },
 ]
+
+
+permission_query_conditions = {
+    "CryoCord Onboarding Case":
+        "crm_cryocord.crm_cryocord.doctype.cryocord_onboarding_case.cryocord_onboarding_case.get_permission_query_conditions"
+}
+
+has_permission = {
+    "CryoCord Onboarding Case":
+        "crm_cryocord.crm_cryocord.doctype.cryocord_onboarding_case.cryocord_onboarding_case.has_permission"
+}
