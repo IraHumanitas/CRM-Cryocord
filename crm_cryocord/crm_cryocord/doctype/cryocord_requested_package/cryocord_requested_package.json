@@ -61,13 +61,13 @@
   {
    "columns": 1,
    "fetch_from": "service_item.cc_default_storage_years",
-   "fetch_if_empty": 1,
    "fieldname": "storage_duration_years",
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "Storage Duration (Years)",
    "mandatory_depends_on": "eval:doc.billing_type && doc.billing_type==\"Annual/Recurring\"",
-   "non_negative": 1
+   "non_negative": 1,
+   "read_only": 1
   },
   {
    "fieldname": "section_break_baji",
@@ -149,9 +149,9 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-07-22 21:57:40.852720",
+ "modified": "2026-08-21 06:53:43.760981",
  "modified_by": "Administrator",
- "module": "CRM CryoCord",
+ "module": "Crm Cryocord",
  "name": "CryoCord Requested Package",
  "owner": "Administrator",
  "permissions": [],

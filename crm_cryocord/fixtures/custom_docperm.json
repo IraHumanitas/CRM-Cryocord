@@ -18,9 +18,9 @@
   "read": 1,
   "report": 1,
   "role": "Operations Manager",
-  "select": 0,
+  "select": 1,
   "share": 1,
-  "submit": 0,
+  "submit": 1,
   "write": 1
  },
  {

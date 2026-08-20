@@ -528,6 +528,7 @@ class CryoCordOnboardingCase(Document):
             return
 
         before = self.get_doc_before_save()
+
         if not before:
             return
 
@@ -537,35 +538,35 @@ class CryoCordOnboardingCase(Document):
             return
 
         for fieldname in c.PROTECTED_FIELDS_WHEN_LOCKED:
-            old_value, new_value = before.get(fieldname), self.get(fieldname)
+            old_value = before.get(fieldname)
+            new_value = self.get(fieldname)
 
             if fieldname == c.CHILD_TABLE_FIELD:
                 if self._serialize_rows(old_value) != self._serialize_rows(new_value):
                     frappe.throw(
-                        _("Requested Packages cannot be modified while the case is in '{0}'.").format(prev_state)
+                        _(
+                            "Requested Packages cannot be modified while the case is in '{0}'."
+                        ).format(prev_state)
                     )
-            elif old_value != new_value:
+
+                continue
+
+            if old_value != new_value:
                 frappe.throw(
                     _("Field '{0}' cannot be changed while the case is in '{1}'.").format(
-                        fieldname, prev_state
+                        fieldname,
+                        prev_state,
                     )
                 )
 
 
     @staticmethod
     def _serialize_rows(rows):
-        ignore = {
-            "modified", 
-            "modified_by",
-            "creation",
-            "owner",
-            "name",
-            "idx",
-            *c.CHILD_DERIVED_FIELDS,
-        }
-
         return frappe.as_json([
-            {k: v for k, v in row.as_dict().items() if k not in ignore}
+            {
+                fieldname: row.get(fieldname)
+                for fieldname in c.PROTECTED_CHILD_FIELDS
+            }
             for row in (rows or [])
         ])
 

@@ -30,6 +30,7 @@ STATE_COMPLETED = "Completed"
 STATE_CANCELLED = "Cancelled"
 
 
+
 # WORKFLOW TRANSITIONS
 # Maps state transitions to workflow action labels.
 TRANSITION_ACTIONS = {
@@ -103,6 +104,12 @@ PROTECTED_FIELDS_WHEN_LOCKED = (
     "discount_reason",
     "payment_terms",
 )
+
+PROTECTED_CHILD_FIELDS = {
+    CHILD_ITEM_FIELD,
+    CHILD_QTY_FIELD,
+    CHILD_DISCOUNT_PCT_FIELD,
+}
  
 # Managed exclusively by server-side workflow logic.
 SERVER_MANAGED_FIELDS = (
