@@ -266,4 +266,35 @@ fixtures = [
             ["fieldname", "like", "cc_%"]
         ]
     },
+
+
+    # Seeder Data Master
+    {
+        "dt": "Company",
+        "filters": [
+            ["name", "=", "CryoCord"]
+        ]
+    },
+    {
+        "dt": "Item",
+        "filters": [
+            ["name", "like", "CC%"]
+        ]
+    },
+    {
+        "dt": "Item Group"
+    },
+    {
+        "dt": "Item Price",
+        "filters": [
+            ["name", "like", "CC%"]
+        ]
+    },
+    {
+        "dt": "Price List",
+        "filters": [
+            ["name", "=", "CryoCord Selling"]
+        ]
+    }
+
 ]
