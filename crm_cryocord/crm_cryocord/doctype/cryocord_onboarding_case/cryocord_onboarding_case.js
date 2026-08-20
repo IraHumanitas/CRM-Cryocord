@@ -73,6 +73,7 @@ frappe.ui.form.on("CryoCord Requested Package", {
                 );
             }
 
+            fetch_rate(frm, cdt, cdn);
         });
     },
 
@@ -88,6 +89,31 @@ frappe.ui.form.on("CryoCord Requested Package", {
         calculate_row(frm, cdt, cdn);
     }
 });
+
+function fetch_rate(frm, cdt, cdn) {
+    const row = locals[cdt][cdn];
+
+    if (!row.service_item || !frm.doc.selling_price_list) {
+        return;
+    }
+
+    frappe.call({
+        method: "crm_cryocord.api.fetch_rate.get_item_rate",
+        args: {
+            item_code: row.service_item,
+            price_list: frm.doc.selling_price_list
+        },
+        callback(r) {
+            frappe.model.set_value(
+                cdt,
+                cdn,
+                "rate",
+                flt(r.message)
+            );
+        }
+    });
+}
+
 
 function calculate_row(frm, cdt, cdn) {
     const row = locals[cdt][cdn];
