@@ -232,7 +232,8 @@ Server-managed fields include:
 These values are populated and validated by server-side workflow logic rather than trusted from client-side requests.
 
 ### 5.4 Workflow Authorization
--- soona.
+— soona.
+> in section 6
 
 ### 5.5 Separation of Duties
 
@@ -268,9 +269,34 @@ This layered authorization model ensures that permissions are enforced independe
 
 ## 6. Role & Permission Matrix
 
-<!-- REQUIRED by brief. Columns: Business Role | Frappe Role |
-     Create | Edit Draft | Approve | Reject | Close | Allowed Transitions |
-     Enforced By (Role Permissions / Workflow / Python) — per rule. -->
+The following matrix summarizes the permissions and workflow actions available to each business role for the **CryoCord Onboarding Case**.
+
+| Business Role      | Frappe Role        | Create | Edit Draft             | Approve                        | Reject | Close  | Allowed Transitions                                                                                                                        | Enforced By                          |
+| ------------------ | ------------------ | ------ | ---------------------- | ------------------------------ | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
+| Sales User         | Sales User         | Yes    | Own cases              | No                             | No     | No     | Draft → Sales Review, Rejected → Draft                                                                                                     | Role Permissions + Python            |
+| Sales Manager      | Sales Manager      | No     | All accessible cases   | Submit for Operations Approval | No     | Cancel | Sales Review → Pending Operations Approval, Sales Review → Draft, Draft/Sales Review → Cancelled                                           | Role Permissions + Workflow + Python |
+| Operations Manager | Operations Manager | No     | Operations-stage cases | Yes                            | Yes    | Yes    | Pending Operations Approval → Approved/Rejected/Cancelled, Approved → Ready for Storage Agreement, Ready for Storage Agreement → Completed | Role Permissions + Workflow + Python |
+| System Manager     | System Manager     | Yes    | Yes                    | Yes                            | Yes    | Yes    | All valid workflow transitions                                                                                                             | Role Permissions + Workflow + Python |
+
+### Workflow Transition Responsibility
+
+The main workflow responsibilities are:
+
+| Transition                                        | Responsible Role   |
+| ------------------------------------------------- | ------------------ |
+| Draft → Sales Review                              | Sales User         |
+| Sales Review → Draft                              | Sales Manager      |
+| Sales Review → Pending Operations Approval        | Sales Manager      |
+| Pending Operations Approval → Operations Approved | Operations Manager |
+| Pending Operations Approval → Rejected            | Operations Manager |
+| Operations Approved → Ready for Storage Agreement | Operations Manager |
+| Ready for Storage Agreement → Completed           | Operations Manager |
+| Draft / Sales Review → Cancelled                  | Sales Manager      |
+| Pending Operations Approval → Cancelled           | Operations Manager |
+| Rejected → Draft                                  | Sales User         |
+
+Workflow transitions are validated server-side in addition to the Frappe Workflow configuration. This prevents users from bypassing workflow rules through direct API or document manipulation.
+
 
 ## 7. Report
 
@@ -412,11 +438,95 @@ The report includes a donut chart showing the distribution of cases by aging cat
 This provides a quick visual representation of the current approval queue and helps identify whether cases are accumulating in the older aging categories.
 
 
-## 8. REST API 
 
-<!-- get_case_status endpoint —
-     @frappe.whitelist(), explicit permission check, no allow_guest,
-     example request/response, 200/403/401 test results. -->
+## 8. REST API
+
+### Get Onboarding Case Status
+
+The `get_onboarding_case_status` endpoint returns the current state of a **CryoCord Onboarding Case** together with its audit history.
+
+The endpoint is exposed using Frappe's `@frappe.whitelist()` and does **not** use `allow_guest=True`. Access is explicitly checked using the document's read permission before any case data or audit history is returned.
+
+### Endpoint
+
+```text
+GET /api/method/crm_cryocord.api.onboarding_case.get_onboarding_case_status
+```
+
+### Parameters
+
+| Parameter | Type   | Required | Description                             |
+| --------- | ------ | -------- | --------------------------------------- |
+| `name`    | String | Yes      | Name/ID of the CryoCord Onboarding Case |
+
+### Example Request
+
+```text
+GET /api/method/crm_cryocord.api.onboarding_case.get_onboarding_case_status?name=SAR-2026-0005
+```
+
+The request must be authenticated using a valid Frappe session or API credentials.
+
+### Example Response
+
+```json
+{
+    "message": {
+        "onboarding_case": {
+            "name": "SAR-2026-0005",
+            "customer": "CryoCare Medical Centre",
+            "workflow_state": "Draft",
+            "docstatus": 0,
+            "submitted_on": null,
+            "decision_by": null,
+            "decision_on": null
+        },
+        "audit_history": [
+            {
+                "performed_at": "2026-08-13T10:15:32",
+                "from_state": null,
+                "to_state": "Draft",
+                "action": "Create",
+                "performed_by": "sales@example.com",
+                "remarks": null,
+                "is_blocked_attempt": 0
+            }
+        ]
+    }
+}
+```
+
+The response intentionally exposes only the fields required by the API contract rather than returning the complete document.
+
+### Authorization
+
+The endpoint performs an explicit read-permission check on the requested Onboarding Case. A user who does not have permission to access the case cannot retrieve either its current state or audit history.
+
+The audit history is therefore protected by the same authorization boundary as the parent Onboarding Case.
+
+### Security
+
+The endpoint is intentionally not exposed to guest users:
+
+```python
+@frappe.whitelist()
+def get_onboarding_case_status(name):
+```
+
+No `allow_guest=True` is configured. Authentication is therefore required before the endpoint can be executed.
+
+### Test Results
+
+| Test                                       | Result                                                  |
+| ------------------------------------------ | ------------------------------------------------------- |
+| Authenticated request with valid case ID   | **200 OK** — returns current state and audit history    |
+| Authenticated request with invalid case ID | **DoesNotExistError** — case does not exist             |
+| Authenticated user without read permission | **403 / PermissionError** — access denied               |
+| Request without authentication             | **401 / AuthenticationError** — authentication required |
+
+These tests verify both the functional response and the server-side authorization boundary of the endpoint.
+
+
 
 ## 9. Upgrade Safety
 
