@@ -295,6 +295,13 @@ fixtures = [
         "filters": [
             ["name", "=", "CryoCord Selling"]
         ]
-    }
+    },
 
+    # Property Setter
+    {
+        "dt": "Property Setter",
+        "filters": [
+            ["doc_type", "=", "Item"]
+        ]
+    },
 ]
