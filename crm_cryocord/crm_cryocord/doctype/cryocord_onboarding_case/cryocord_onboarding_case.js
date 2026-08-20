@@ -14,6 +14,24 @@ frappe.ui.form.on("CryoCord Onboarding Case", {
                 filters
             };
         });
+
+         frm.set_query("contact_person", () => {
+            return {
+                filters: {
+                    link_doctype: "Customer",
+                    link_name: frm.doc.customer
+                }
+            };
+        });
+
+        frm.set_query("primary_address", () => {
+            return {
+                filters: {
+                    link_doctype: "Customer",
+                    link_name: frm.doc.customer
+                }
+            };
+        });
     },
 
     refresh(frm) {
