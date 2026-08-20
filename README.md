@@ -770,10 +770,53 @@ After an ERPNext/Frappe upgrade, the custom application's fixtures, patches, wor
 
 ## 10. Production-Readiness Note
 
-<!-- REQUIRED — a few sentences covering:
-     what happens during bench migrate; which fixtures are synced;
-     when a patch is used instead of a fixture; backup steps before applying
-     in production; and how to restore if something goes wrong. -->
+Before applying the CryoCord application to a production environment, database and site configuration should be backed up so the deployment can be restored if a migration or customization change causes unexpected issues.
+
+### `bench migrate`
+
+Running:
+
+```bash
+bench --site <site> migrate
+```
+
+applies pending Frappe/ERPNext migrations and synchronizes the custom application's required metadata and configuration for the site. This includes applicable fixtures such as Custom Fields, Property Setters, Workflow configuration, Roles, and other exported records configured by the application.
+
+The migration should be followed by validation of the affected DocTypes, workflow transitions, permissions, reports, and API endpoints.
+
+### Fixtures vs. Patches
+
+Fixtures are used for **configuration and metadata** that should be reproducible across environments, such as Custom Fields, Property Setters, roles, and workflow-related configuration.
+
+A **patch** should be used when an upgrade requires an actual **data transformation or migration of existing records**, especially when the change cannot be expressed as static fixture data.
+
+For example, adding a new Custom Field can be handled through fixture synchronization, while converting existing records to populate a newly introduced value should be handled through a patch.
+
+### Backup Before Production Migration
+
+Before running migration commands in production:
+
+```bash
+bench --site <site> backup
+```
+
+The backup should be verified and retained according to the production backup policy before applying the migration.
+
+For higher-risk changes, application-level and infrastructure-level backups should also be coordinated according to the deployment environment.
+
+### Restore / Rollback
+
+If a migration causes an unrecoverable issue, stop further deployment changes and restore the affected site from the verified pre-migration backup.
+
+The restore process should include:
+
+1. Restore the database backup.
+2. Restore site files/private files if they were included in the backup strategy.
+3. Ensure the application version is compatible with the restored database state.
+4. Restart the required bench services.
+5. Verify core DocTypes, permissions, workflow transitions, reports, and API endpoints.
+
+Production migration should therefore be treated as a controlled deployment step rather than a manual database modification. A verified backup provides the rollback point before applying schema, metadata, or data changes.
 
 
 ## 11. What I Would Do With More Time
