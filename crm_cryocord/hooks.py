@@ -375,6 +375,18 @@ fixtures = [
             ["name", "like", "CryoCord%"]
         ]
     },
+
+    # Demo User
+    {
+        "dt": "User",
+        "filters": [
+            ["email", "in", [
+                "sales.user@cms.com",
+                "salesmanager@cms.com",
+                "operator@cms.com",
+            ]]
+        ],
+    }
 ]
 
 

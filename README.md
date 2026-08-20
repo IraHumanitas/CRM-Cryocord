@@ -54,17 +54,17 @@ bench --site <your-site> clear-cache
 * Report configuration.
 * Other application-specific metadata required by the implementation.
 
-### 1.2 Create test users & assign roles
+### 1.2 Demo Accounts
 
-Create three users (Users → New User, user type **System User**) and assign one CryoCord role each:
+The following accounts are provided for testing role-based access and workflow permissions:
 
-| User (example) | Role |
-|---|---|
-| `sales.user@CRM.com` | CryoCord Sales Officer |
-| `operation@CRM.com` | CryoCord Operations Manager |
-| `sales.manager@CRM.com` | CryoCord Sales Manager |
+| Role | Email | Password |
+|---|---|---|
+| Sales User | `sales.user@cms.com` | `CMSCryocord` |
+| Sales Manager | `sales.manager@cms.com` | `CMSCryocord` |
+| Operations Manager | `operations.manager@cms.com` | `CMSCryocord` |
 
-> ⚠️ **Do not test as Administrator** — it bypasses every permission check, so everything will look like it "works" even when Doc Permission are wrong.
+> These accounts are intended for local development and demonstration purposes only.
 
 ### 1.3 Troubleshooting
 
