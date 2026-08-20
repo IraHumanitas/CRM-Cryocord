@@ -9,6 +9,21 @@ from crm_cryocord.utils.pricing import get_item_price
 
 
 class CryoCordOnboardingCase(Document):
+    # ------------------------------------------------------------------
+    # LIFECYCLE HOOKS
+    # ------------------------------------------------------------------
+    def after_insert(self):
+        self._log_transition(from_state=None, to_state=self.workflow_state, action="Create")
+        self._sync_lead_status(self.workflow_state)
+
+    def on_update(self):
+        transition = getattr(self, "_pending_transition", None)
+        if not transition:
+            return
+        self._log_transition(**transition)
+        self._sync_lead_status(transition["to_state"])
+        del self._pending_transition
+
     def validate(self):
         self.handle_sales_officer_assignment()
 
@@ -37,6 +52,31 @@ class CryoCordOnboardingCase(Document):
 
         self.set_next_renewal_date()
 
+    # ------------------------------------------------------------------
+    # AUDIT LOG
+    # ------------------------------------------------------------------
+    def _sync_lead_status(self, state):
+        if not self.lead:
+            return
+        lead_status = c.LEAD_STATUS_BY_CASE_STATE.get(state)
+        if lead_status:
+            frappe.db.set_value("Lead", self.lead, "status", lead_status, update_modified=False)
+
+    def _log_transition(self, from_state, to_state, action, blocked=False, reason=None):
+        frappe.get_doc(
+            {
+                "doctype": "CryoCord Approval Audit Log",
+                "onboarding_case": self.name,
+                "from_state": from_state,
+                "to_state": to_state,
+                "action": action,
+                "actor": frappe.session.user,
+                "timestamp": now_datetime(),
+                "reason": reason,
+                "is_blocked_attempt": 1 if blocked else 0,
+                "ip_address": getattr(frappe.local, "request_ip", None),
+            }
+        ).insert(ignore_permissions=True)
 
     # ------------------------------------------------------------------
     # OWNERSHIP & ASSIGNMENT
@@ -387,6 +427,12 @@ class CryoCordOnboardingCase(Document):
 
         self._dispatch_transition_guard(previous_state, state)
 
+        self._pending_transition = {
+            "from_state": previous_state,
+            "to_state": state,
+            "action": c.TRANSITION_ACTIONS.get((previous_state, state), "Unknown Transition"),
+            "reason": self.rejection_reason if state == c.STATE_REJECTED else None,
+        }
 
     def _dispatch_transition_guard(self, previous_state, state):
         roles = set(frappe.get_roles())
