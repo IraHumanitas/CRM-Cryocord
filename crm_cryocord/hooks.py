@@ -334,6 +334,14 @@ fixtures = [
     },
     {"dt": "Workflow State"},
     {"dt": "Workflow Action Master"},
+
+    # Workspace
+    {
+        "dt": "Workspace",
+        "filters": [
+            ["name", "=", "CryoCord CRM"]
+        ]
+    },
 ]
 
 
