@@ -183,9 +183,88 @@ Some Item fields are conditionally displayed based on the selected service categ
 
 ## 5. Permissions & Separation of Duties
 
-<!-- Permissio: the four roles, permlevel 1 on approval fields,
-     Custom DocPerms for standard DocTypes, and the SoD guard —
-     including how it holds against direct REST calls. -->
+Access is controlled through standard Frappe Role Permissions, custom `DocPerm` configurations, row-level permission hooks, and server-side validation. Baseline DocType permissions define what actions each role can perform, while row-level and server-side rules further restrict access based on record ownership, workflow stage, and business requirements.
+
+### 5.1 Role-Based DocType Permissions
+
+The following table summarizes the baseline permissions configured for the application's primary roles:
+
+| DocType                      | Sales User                                | Sales Manager           | Operations Manager                      | System Manager |
+| ---------------------------- | ----------------------------------------- | ----------------------- | --------------------------------------- | -------------- |
+| **Lead**                     | Create / Read / Update assigned leads     | Create / Read / Update  | Read                                    | Full           |
+| **Customer**                 | Create / Read / Update assigned customers | Create / Read / Update  | Read                                    | Full           |
+| **Contact**                  | Create / Read / Update                    | Create / Read / Update  | Read                                    | Full           |
+| **Address**                  | Create / Read / Update                    | Create / Read / Update  | Read                                    | Full           |
+| **Item**                     | Read                                      | Read / Update           | Read                                    | Full           |
+| **Contract**                 | Read                                      | Create / Read / Update  | Create / Read / Update                  | Full           |
+| **CryoCord Onboarding Case** | Create / Read / Update own assigned cases | Read / Update all cases | Read / Update cases in Operations stage | Full           |
+
+These permissions represent the **baseline DocType-level authorization**. Additional restrictions are applied through row-level permission hooks and server-side business logic.
+
+> **Note:** Workflow transition permissions are enforced separately and are not represented solely by the DocType permission matrix above.
+
+### 5.2 Row-Level Permissions
+
+`CryoCord Onboarding Case` uses Frappe's `permission_query_conditions` and `has_permission` hooks to enforce record-level access.
+
+The access rules are:
+
+* **Sales User** can access only cases where `sales_officer` matches the authenticated user.
+* **Sales Manager** can access onboarding cases across the sales team.
+* **Operations Manager** can access cases that have reached the Operations stage. Cases that are still in the early sales stages remain restricted.
+* **System Manager** has unrestricted access.
+
+These hooks **restrict access but do not grant baseline DocType permissions**. The corresponding `DocPerm` configuration is therefore maintained separately.
+
+### 5.3 Field-Level Permissions
+
+Approval and decision-related fields are protected using Frappe's permission levels. Fields containing system-generated approval metadata are assigned a higher permission level to prevent ordinary users from directly modifying them.
+
+Server-managed fields include:
+
+* `submitted_by`
+* `submitted_on`
+* `decision_by`
+* `decision_on`
+* `rejection_reason`
+* `onboarded_on`
+
+These values are populated and validated by server-side workflow logic rather than trusted from client-side requests.
+
+### 5.4 Workflow Authorization
+-- soona.
+
+### 5.5 Separation of Duties
+
+The Operations approval stage enforces separation of duties at the server level.
+
+An **Operations Manager cannot approve or reject a case that they originally submitted or own**. The restriction is evaluated against the authenticated Frappe session user:
+
+```python
+if user in (self.owner, self.sales_officer):
+    frappe.throw(
+        _("You cannot approve or reject a case you submitted yourself.")
+    )
+```
+
+Because this validation is performed server-side, changing the client-side UI or manually constructing an API request does not bypass the restriction.
+
+### 5.7 Authorization Layers
+
+The overall authorization model can be summarized as follows:
+
+| Layer                           | Responsibility                                                                         |
+| ------------------------------- | -------------------------------------------------------------------------------------- |
+| **Role Permissions / DocPerm**  | Defines baseline permissions for each role and DocType.                                |
+| **Permission Query Conditions** | Restricts which records are returned to a user.                                        |
+| **`has_permission`**            | Performs record-level permission checks for individual documents.                      |
+| **Field Permission Level**      | Protects sensitive and server-managed fields from direct editing.                      |
+| **Workflow Validation**         | Ensures only valid state transitions are allowed.                                      |
+| **Server-Side Business Rules**  | Enforces requirements such as separation of duties and required fields.                |
+| **API Validation**              | Ensures direct API requests are subject to the same authorization rules as UI actions. |
+
+This layered authorization model ensures that permissions are enforced independently of the client interface and remain effective for both normal Frappe UI interactions and direct API requests.
+
 
 ## 6. Role & Permission Matrix
 
