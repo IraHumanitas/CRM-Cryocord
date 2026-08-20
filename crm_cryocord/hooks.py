@@ -268,7 +268,7 @@ fixtures = [
     },
 
 
-    # Seeder Data Master
+    # Seeder Dummy Data Master
     {
         "dt": "Company",
         "filters": [
@@ -326,6 +326,14 @@ fixtures = [
             ]]
         ],
     },
+
+    # Workflow
+    {
+        "dt": "Workflow",
+        "filters": [["name", "=", "CryoCord Onboarding Case Workflow"]],
+    },
+    {"dt": "Workflow State"},
+    {"dt": "Workflow Action Master"},
 ]
 
 
