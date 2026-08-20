@@ -286,9 +286,104 @@ Where ERPNext behavior or schema changes between versions affect the customizati
 
 
 ## 4. Workflow & Server-Side Guards
-<!-- State diagram, transition table
-     (from / action / to / docstatus / role / guard), and the note on why
-     Rejected stays at docstatus 0 while immutability begins at Approved. -->
+
+`CryoCord Onboarding Case` uses a Frappe Workflow for the overall lifecycle, with additional server-side guards to enforce authorization and business rules.
+
+### 4.1 Workflow States
+
+The onboarding lifecycle is:
+
+```text
+Draft
+  │
+  ├── Submit for Review ───────────────→ Sales Review
+  │                                        │
+  │                                        ├── Request Revision ──→ Draft
+  │                                        │
+  │                                        └── Submit for Operations Approval
+  │                                                  ↓
+  │                                  Pending Operations Approval
+  │                                      │              │
+  │                                      │              └── Reject ──→ Rejected
+  │                                      │
+  │                                      └── Approve
+  │                                             ↓
+  │                                  Operations Approved
+  │                                             │
+  │                                             └── Mark Ready
+  │                                                    ↓
+  │                                  Ready for Storage Agreement
+  │                                             │
+  │                                             └── Complete
+  │                                                    ↓
+  │                                               Completed
+  │
+  └── Cancel ──→ Cancelled
+```
+
+Rejected cases can be revised and returned to Draft:
+
+```text
+Rejected → Draft
+```
+
+Cases can also be cancelled from the applicable pre-completion stages.
+
+### 4.2 Transition Rules
+
+| From                        | Action                         | To                          | Docstatus | Role               | Server-Side Guard                                                                           |
+| --------------------------- | ------------------------------ | --------------------------- | --------: | ------------------ | ------------------------------------------------------------------------------------------- |
+| Draft                       | Submit for Review              | Sales Review                |         0 | Sales User         | Required customer, service category, contact, address, payment terms, and requested package |
+| Sales Review                | Request Revision               | Draft                       |         0 | Sales Manager      | Sales Manager role required                                                                 |
+| Sales Review                | Submit for Operations Approval | Pending Operations Approval |         0 | Sales Manager      | Requested package required; submission metadata is generated server-side                    |
+| Pending Operations Approval | Approve                        | Operations Approved         |         0 | Operations Manager | Separation of duties; decision metadata generated server-side                               |
+| Pending Operations Approval | Reject                         | Rejected                    |         0 | Operations Manager | Separation of duties; rejection reason required                                             |
+| Operations Approved         | Mark Ready                     | Ready for Storage Agreement |         1 | Operations Manager | Operations Manager role required                                                            |
+| Ready for Storage Agreement | Complete                       | Completed                   |         1 | Operations Manager | Contract reference required; onboarding date generated server-side                          |
+| Rejected                    | Revise                         | Draft                       |         0 | Sales User         | Rejection reason is cleared server-side                                                     |
+| Draft / Sales Review        | Cancel                         | Cancelled                   |         0 | Sales Manager      | Sales Manager role required                                                                 |
+| Pending Operations Approval | Cancel                         | Cancelled                   |         0 | Operations Manager | Operations Manager role required                                                            |
+
+### 4.3 Server-Side Guards
+
+The Frappe Workflow configuration defines the available states and transitions, while the DocType controller enforces the business rules on the server.
+
+The server validates:
+
+* whether the target workflow state is valid;
+* whether the requested transition is defined in the workflow;
+* whether the current user has the required role;
+* whether mandatory business fields are present;
+* whether the selected items are valid CryoCord storage-service items;
+* whether the item group matches the selected Service Category, except for `All Item Groups`;
+* whether separation-of-duties requirements are satisfied;
+* whether server-managed fields are protected from client-side modification;
+* whether state-specific requirements such as rejection reason and contract reference are satisfied.
+
+This provides defense in depth so that workflow rules cannot be bypassed by directly manipulating the document or calling the API.
+
+### 4.4 Why Rejected Remains `docstatus = 0`
+
+A rejected case remains in `docstatus = 0` because rejection represents a **workflow decision**, not a finalized ERP document submission.
+
+The case can still be revised and returned to Draft:
+
+```text
+Rejected → Draft → Sales Review
+```
+
+Keeping the document in `docstatus = 0` allows the same onboarding record to continue through the workflow without requiring a new document or an amendment cycle solely because the approval decision was negative.
+
+### 4.5 Why Immutability Begins After Approval
+
+Business content becomes progressively protected once the case leaves the editable states.
+
+`Draft` and `Rejected` remain editable so that the Sales User can prepare or revise the case. Once the case reaches the approval process and especially after `Operations Approved`, the protected business content must no longer be changed arbitrarily.
+
+Server-side immutability checks therefore prevent modification of protected fields and requested packages after the case has entered a locked workflow stage.
+
+This ensures that the information reviewed and approved by Operations remains consistent with the information used for the subsequent storage-agreement and completion stages.
+
 
 ## 5. Permissions & Separation of Duties
 
