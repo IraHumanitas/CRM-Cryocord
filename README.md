@@ -272,9 +272,145 @@ This layered authorization model ensures that permissions are enforced independe
      Create | Edit Draft | Approve | Reject | Close | Allowed Transitions |
      Enforced By (Role Permissions / Workflow / Python) — per rule. -->
 
-## 7. Report 
+## 7. Report
 
-<!-- Pending Approvals by Age report -->
+### Pending Approvals by Age
+
+The **Pending Approvals by Age** Script Report provides an operational view of Onboarding Cases that are pending in the approval workflow. The report focuses on how long each case has been waiting, its queue condition, Expected Delivery Date (EDD), and an automatically calculated priority.
+
+#### Purpose
+
+This report is intended to help the Operations and Management teams identify cases that require attention based on:
+
+* How many days the case has been waiting since `submitted_on`
+* The age of the approval queue
+* Whether the Expected Delivery Date is overdue or approaching
+* The commercial value of the case
+* A calculated priority score
+
+#### Data Source
+
+The report reads data from:
+
+```text
+CryoCord Onboarding Case
+```
+
+The main fields used are:
+
+```text
+name
+customer
+service_category
+sales_officer
+expected_delivery_date
+grand_total_excl_tax
+submitted_on
+workflow_state
+```
+
+#### Filters
+
+The report supports the following filters:
+
+| Filter         | Description                                       |
+| -------------- | ------------------------------------------------- |
+| Workflow State | Filter cases by their current workflow state      |
+| Sales Officer  | Filter cases assigned to a specific Sales Officer |
+| Queue Status   | Filter by `Normal`, `Warning`, or `Critical`      |
+| EDD Status     | Filter by `On Track`, `Due Soon`, or `Overdue`    |
+
+The first two filters are applied directly in the database query, while `Queue Status` and `EDD Status` are calculated from the report data and applied before the final result is returned.
+
+#### Waiting Days
+
+`Waiting Days` is calculated from the case's `submitted_on` date up to the current date.
+
+The calculation is:
+
+```text
+Waiting Days = Today - Submitted On
+```
+
+Cases are then grouped into the following aging categories:
+
+| Waiting Days | Aging    | Queue Status |
+| -----------: | -------- | ------------ |
+|          0–2 | 0-2 Days | Normal       |
+|          3–7 | 3-7 Days | Warning      |
+|           >7 | >7 Days  | Critical     |
+
+#### EDD Status
+
+When an Expected Delivery Date is available, the report calculates `Days to EDD` and assigns an EDD status:
+
+| Condition                    | EDD Status |
+| ---------------------------- | ---------- |
+| EDD has passed               | Overdue    |
+| EDD is within 3 days         | Due Soon   |
+| EDD is more than 3 days away | On Track   |
+
+Cases without an Expected Delivery Date use `-` as their EDD status.
+
+#### Priority Score
+
+The report calculates a priority score using waiting time, EDD urgency, and case value.
+
+| Condition             | Score |
+| --------------------- | ----: |
+| Waiting > 7 days      |   +30 |
+| Waiting 3–7 days      |   +15 |
+| EDD overdue           |   +40 |
+| EDD due within 3 days |   +20 |
+| Grand Total ≥ 10,000  |   +10 |
+
+The resulting score determines the priority:
+
+| Score | Priority  |
+| ----: | --------- |
+|  ≥ 60 | 🔴 High   |
+| 30–59 | 🟡 Medium |
+|  < 30 | 🟢 Low    |
+
+This provides a simple prioritization mechanism for identifying cases that have both prolonged approval waiting time and/or approaching delivery deadlines.
+
+#### Sorting
+
+The final result is sorted by:
+
+1. Highest priority score
+2. Highest waiting days
+3. Earliest `submitted_on`
+
+This places the cases with the highest operational urgency at the top of the report.
+
+#### Report Summary
+
+The report provides the following summary indicators:
+
+```text
+Total Cases
+Critical Queue
+Warning Queue
+Overdue EDD
+Due Soon
+Average Waiting Days
+```
+
+`Average Waiting Days` is calculated across all cases returned after the selected filters are applied.
+
+#### Chart
+
+The report includes a donut chart showing the distribution of cases by aging category:
+
+```text
+0-2 Days
+3-7 Days
+>7 Days
+```
+
+This provides a quick visual representation of the current approval queue and helps identify whether cases are accumulating in the older aging categories.
+
 
 ## 8. REST API 
 
