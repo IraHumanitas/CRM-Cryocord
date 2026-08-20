@@ -165,18 +165,127 @@ Some Item fields are conditionally displayed based on the selected service categ
 
 ## 3. Data Model & Design Rationale
 
-<!-- Define Data Model for Custom Doctype and adjust column for reuse doctype-->
-
 ### 3.1 Why reuse standard ERPNext records (Customer, Lead, Item) instead of creating my own?
+
+The application reuses standard ERPNext records where the required business concept already exists.
+
+* **Customer** is reused as the master record for the customer receiving the CryoCord service.
+* **Lead** is reused for the CRM lifecycle and remains the source of sales-related information before onboarding.
+* **Item** is reused as the service/package catalog, with custom `cc_` fields added for CryoCord-specific attributes such as storage-service eligibility.
+* **Contact** and **Address** are also reused rather than creating duplicate customer-related master data.
+
+This avoids duplicating ERPNext's existing master-data relationships, permissions, and standard behavior. Custom fields are added only where CryoCord-specific information is required.
+
 ### 3.2 Why is the Onboarding Case a custom DocType — why not Quotation or Opportunity?
+
+`CryoCord Onboarding Case` is used as the system of record for the onboarding and approval lifecycle because the process represents more than a sales transaction.
+
+The case contains business information and workflow-specific data such as:
+
+* onboarding ownership and assignment,
+* requested service packages,
+* approval states,
+* submission and decision metadata,
+* handover references,
+* onboarding completion information,
+* server-side business validations.
+
+A **Quotation** represents a commercial quotation, while an **Opportunity** represents a sales opportunity. Neither is a natural system of record for the complete operational approval lifecycle required by the assessment.
+
+Keeping the process in a dedicated DocType also allows the application to define its own workflow, permissions, immutability rules, audit trail, and business validations without changing the meaning of standard ERPNext documents.
+
 ### 3.3 When did I use a child table vs. a separate linked DocType, and why?
+
+The requested service packages are implemented as a **child table** inside `CryoCord Onboarding Case`.
+
+A child table is appropriate because each package row belongs directly to a single onboarding case and does not require an independent lifecycle.
+
+Each row stores information such as:
+
+* selected service item,
+* quantity,
+* rate,
+* discount,
+* calculated amounts.
+
+The actual service definition remains in the standard **Item** DocType, while the child table represents the specific items requested in that case.
+
+A separate linked DocType would be more appropriate for a record that has its own lifecycle, permissions, or independent business meaning. The requested package rows do not require that level of independence.
+
 ### 3.4 Frappe Workflow exists — why is server-side validation still necessary?
+
+Frappe Workflow provides the configured workflow states and transitions, but the application still validates transitions on the server.
+
+The server-side implementation checks that:
+
+* the target state is valid,
+* the transition exists in the configured workflow,
+* the current user has the required role,
+* required fields are present,
+* separation-of-duties rules are satisfied,
+* state-specific business requirements are met,
+* server-managed fields cannot be supplied arbitrarily by the client.
+
+This is necessary because workflow buttons and client-side UI restrictions are not a sufficient security boundary. A user may interact with the document through the API or another non-standard client, so the business rules must also be enforced in Python.
+
 ### 3.5 How are permissions enforced beyond hiding fields or buttons?
+
+Authorization is implemented in multiple layers.
+
+Standard Frappe **Role Permissions / DocPerm** provide the baseline permissions for each role.
+
+For `CryoCord Onboarding Case`, additional row-level restrictions are implemented through:
+
+* `get_permission_query_conditions()` to restrict which records are visible,
+* `has_permission()` to validate access to an individual document,
+* server-side workflow guards to control who may perform each transition,
+* field permission levels for protected fields,
+* server-managed field enforcement to prevent client-side tampering.
+
+For example, a Sales User can only access cases assigned to that user through `sales_officer`, while Operations Managers cannot access cases that are still in the early sales stages.
+
+Therefore, changing the UI, removing a button, or manually constructing an API request does not by itself bypass the authorization rules.
+
 ### 3.6 What does the audit trail guarantee, and what does it not?
+
+The application records the onboarding case lifecycle through a dedicated **CryoCord Approval Audit Log**.
+
+The audit trail records transition-related information such as:
+
+* previous state,
+* new state,
+* action,
+* actor,
+* timestamp,
+* reason,
+* IP address where available.
+
+Successful workflow transitions are recorded after the document update through the document lifecycle hooks, while creation is also recorded as an initial transition.
+
+The audit trail provides a historical record of the application's recorded workflow transitions. It is not intended to be a complete database-level history of every field modification, every failed database transaction, or every change made directly outside the application's controlled workflow.
+
+Therefore, the audit log should be understood as a **workflow audit trail**, not a full database change-data-capture system.
+
 ### 3.7 How does the app stay upgrade-safe during ERPNext upgrades?
 
-## 4. Workflow & Server-Side Guards
+The application keeps its customizations inside the **custom CryoCord app** rather than modifying ERPNext/Frappe core code.
 
+Upgrade-safety is supported by:
+
+* reusing standard ERPNext DocTypes instead of replacing them,
+* adding CryoCord-specific fields using the custom app,
+* keeping workflow and permission configuration in the application's own fixtures/configuration,
+* implementing business rules through DocType controller methods and hooks,
+* keeping API endpoints and reports inside the custom app,
+* avoiding direct modifications to ERPNext source files.
+
+This makes ERPNext upgrades safer because the application's business logic remains separated from the framework and ERPNext core. Standard ERPNext functionality can therefore be upgraded independently, while the CryoCord-specific behavior remains within the custom application.
+
+Where ERPNext behavior or schema changes between versions affect the customization, the application's fixtures, patches, and tests should be updated as part of the upgrade process.
+
+
+
+## 4. Workflow & Server-Side Guards
 <!-- State diagram, transition table
      (from / action / to / docstatus / role / guard), and the note on why
      Rejected stays at docstatus 0 while immutability begins at Approved. -->
@@ -233,7 +342,7 @@ These values are populated and validated by server-side workflow logic rather th
 
 ### 5.4 Workflow Authorization
 — soona.
-> in section 6
+> di section 6
 
 ### 5.5 Separation of Duties
 
