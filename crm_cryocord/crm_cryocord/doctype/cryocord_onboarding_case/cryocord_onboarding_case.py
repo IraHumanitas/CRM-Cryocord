@@ -104,15 +104,15 @@ class CryoCordOnboardingCase(Document):
             # serialize concurrent creation for the same customer
             frappe.db.sql("SELECT name FROM `tabCustomer` WHERE name = %s FOR UPDATE", self.customer)
 
-        completed = frappe.db.get_value(
-            "CryoCord Onboarding Case",
-            {"customer": self.customer, "workflow_state": c.STATE_COMPLETED, "name": ["!=", self.name or ""]},
-            "name",
-        )
-        if completed:
-            frappe.throw(
-                _("Customer {0} already has a completed Onboarding Case ({1}).").format(self.customer, completed)
-            )
+        # completed = frappe.db.get_value(
+        #     "CryoCord Onboarding Case",
+        #     {"customer": self.customer, "workflow_state": c.STATE_COMPLETED, "name": ["!=", self.name or ""]},
+        #     "name",
+        # )
+        # if completed:
+        #     frappe.throw(
+        #         _("Customer {0} already has a completed Onboarding Case ({1}).").format(self.customer, completed)
+        #     )
 
         duplicate = frappe.db.get_value(
             "CryoCord Onboarding Case",
