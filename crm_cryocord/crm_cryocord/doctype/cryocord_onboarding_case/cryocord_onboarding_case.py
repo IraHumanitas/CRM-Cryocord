@@ -177,12 +177,15 @@ class CryoCordOnboardingCase(Document):
 
     def validate_requested_packages_and_totals(self):
         rows = self.get(c.CHILD_TABLE_FIELD) or []
-
         if not rows:
             frappe.throw(_("At least one requested package/item is required."))
 
-        state = self.get("workflow_state") or c.STATE_DRAFT
-        recalculate = self.is_new() or state in c.EDITABLE_CONTENT_STATES
+        before = self.get_doc_before_save()
+        previous_state = (before.workflow_state if before else c.STATE_DRAFT)
+        recalculate = (
+            self.is_new()
+            or previous_state in c.EDITABLE_CONTENT_STATES
+        )
 
         gross_total = net_total = 0.0
         seen_items = set()
@@ -233,7 +236,13 @@ class CryoCordOnboardingCase(Document):
             if recalculate:
                 rate = get_item_price(service_item, self.selling_price_list)
                 if rate <= 0:
-                    frappe.throw(_("Row {0}: No valid price found for Item {1} in Price List {2}.").format(row.idx, item_name, self.selling_price_list))
+                    frappe.throw(
+                        _("Row {0}: No valid price found for Item {1} in Price List {2}.").format(
+                            row.idx,
+                            item_name,
+                            self.selling_price_list,
+                        )
+                    )
 
                 gross = flt(qty * rate, 2)
                 discount_amount = flt(gross * discount_pct / 100, 2)
@@ -243,9 +252,8 @@ class CryoCordOnboardingCase(Document):
                 row.set(c.CHILD_AMOUNT_FIELD, gross)
                 row.set(c.CHILD_DISCOUNT_AMOUNT_FIELD, discount_amount)
                 row.set(c.CHILD_NET_AMOUNT_FIELD, net)
+
             else:
-                # locked state — use stored values, don't let price/rounding drift
-                # trip the immutability check downstream
                 gross = flt(row.get(c.CHILD_AMOUNT_FIELD))
                 net = flt(row.get(c.CHILD_NET_AMOUNT_FIELD))
 
@@ -255,7 +263,6 @@ class CryoCordOnboardingCase(Document):
         self.total_amount = flt(gross_total, 2)
         self.grand_total_excl_tax = flt(net_total, 2)
         self.total_discount = flt(self.total_amount - self.grand_total_excl_tax, 2)
-
 
     def validate_discount_reason(self):
         if not (self.total_discount and self.total_amount):
