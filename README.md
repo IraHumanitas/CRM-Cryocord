@@ -14,13 +14,11 @@ A custom Frappe app that manages CryoCord's client onboarding lifecycle inside E
 4. [Workflow & Server-Side Guards](#4-workflow--server-side-guards)
 5. [Permissions & Separation of Duties](#5-permissions--separation-of-duties)
 6. [Role & Permission Matrix](#6-role--permission-matrix)
-7. [Audit Trail: Guarantees & Limitations](#7-audit-trail-guarantees--limitations)
-8. [Report & REST API](#8-report--rest-api)
+7. [Report](#7-report)
+8. [REST API](#8-rest-api)
 9. [Upgrade Safety](#9-upgrade-safety)
 10. [Production-Readiness Note](#10-production-readiness-note)
-11. [Assumptions & Deliberate Scope Decisions](#11-assumptions--deliberate-scope-decisions)
-12. [What I Would Do With More Time](#12-what-i-would-do-with-more-time)
-
+11. [What I Would Do With More Time](#11-what-i-would-do-with-more-time)
 ---
 
 ## 1. Setup
@@ -48,7 +46,7 @@ bench --site <your-site> clear-cache
 **What gets created automatically (fixtures):** 
 
 * Custom fields added to standard ERPNext DocTypes.
-* Roles and role-related configuration where required.
+* Roles, Role Profiles & Permissions — CryoCord roles, role profiles, and custom DocPerm configuration.
 * Workflow configuration for **CryoCord Onboarding Case**.
 * Notifications.
 * Report configuration.
@@ -116,12 +114,12 @@ The app ships configuration required to reproduce the CryoCord setup across envi
 
 | Fixture                    | Contents                                                                                                                   |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **Roles**                  | CryoCord Sales Officer · Operations Manager · Customer Care · Management                                                   |
+| **Roles**                  | Sales User | Sales Manager | Operations                                                 |
 | **Custom Fields**          | `cc_*` fields on **Lead** and **Item**, including service interest, expected delivery date, and service/catalog attributes |
 | **Property Setters**       | Configure the Item Link field to display **Item Name** instead of the Item Code                                            |
 | **Workflow**               | **CryoCord Onboarding** workflow, including workflow states and workflow actions                                           |
 | **Custom Doc Permissions** | Access configuration for CryoCord roles on **Customer, Lead, Contact, Address, Item, and Contract**                        |
-| **Master Data**            | Lead Sources · Customer Groups · Item Groups                                                                               |
+| **Master Data**            | Company · Item · Item Groups · Price List · Item Price · User                                                                           |
 | **Notifications**          | Status-change notifications related to the CryoCord onboarding process                                                     |
 
 The app keeps business-specific behavior inside the custom application while minimizing modifications to ERPNext core code, making the implementation safer to maintain across framework and ERPNext upgrades.
@@ -193,6 +191,15 @@ The case contains business information and workflow-specific data such as:
 A **Quotation** represents a commercial quotation, while an **Opportunity** represents a sales opportunity. Neither is a natural system of record for the complete operational approval lifecycle required by the assessment.
 
 Keeping the process in a dedicated DocType also allows the application to define its own workflow, permissions, immutability rules, audit trail, and business validations without changing the meaning of standard ERPNext documents.
+
+#### Customer-to-Case Relationship
+
+A Customer may have multiple Onboarding Cases over time. However, only one active/in-flight Onboarding Case is allowed for a Customer at a time.
+
+A new Onboarding Case can be created after a previous case reaches Completed or Cancelled. If an existing in-flight case is found, creation of another case for the same Customer is rejected.
+
+This allows repeat onboarding while preventing multiple concurrent onboarding processes for the same Customer.
+
 
 ### 3.3 When did I use a child table vs. a separate linked DocType, and why?
 
@@ -437,7 +444,7 @@ These values are populated and validated by server-side workflow logic rather th
 
 ### 5.4 Workflow Authorization
 — soona.
-> di section 6
+> in section 6
 
 ### 5.5 Separation of Duties
 
@@ -821,7 +828,13 @@ Production migration should therefore be treated as a controlled deployment step
 
 ## 11. What I Would Do With More Time
 
-<!-- PTIOANAL: fiture that not finish in this version-->
+If more time were available, I would further validate and refine the business process before expanding the implementation.
+
+* **Explore the CRM process in more depth** — Work more closely with the business flow to understand the complete customer journey from lead qualification through onboarding, approval, contracting, and subsequent service operations. This could reveal additional business states or transitions that would make the workflow more representative of the real CRM process.
+
+* **Refine the workflow states and transition rules** — Re-evaluate whether each current workflow state represents a meaningful business milestone, and determine whether some states should be split, merged, or have additional validation requirements based on the actual operational process.
+
+* **Improve downstream process integration** — Further define how a completed onboarding case should connect with downstream processes such as contracts, billing, and storage operations, rather than treating the onboarding workflow as an isolated lifecycle.
 
 ---
 
